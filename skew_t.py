@@ -7,6 +7,8 @@ from metpy.cbook import get_test_data
 from metpy.plots import add_metpy_logo, SkewT
 from metpy.units import units
 
+from pint import UnitRegistry
+
 from skewgrib.grib2 import grib2
 
 plt.rcParams['figure.figsize'] = (9,9)
@@ -30,10 +32,22 @@ df = df.dropna(subset=('temperature', 'dewpoint', 'direction', 'speed'
 p = grib2.return_data('Pressure', 'VNY').to(units.hPa)
 T = grib2.return_data('Temperature', 'VNY').to(units.degC)
 
-specific_humidity = grib2.return_data('Specific Humidity', 'VNY')
-# todo: need to find representative data name
-Td = return_data('Dew Point Temperature', 'VNY').to(units.hPa)
-# todo
+specific_humidity = grib2.return_data('Specific humidity', 'VNY')
+dewpoints = []
+for i, v in enumerate(specific_humidity):
+    dewpoints.append(np.float64(mpcalc.dewpoint_from_specific_humidity(v, T[i], p[i])))
+Td = units.Quantity(dewpoints, units.degC)
+
+grbs = grib2.helper_return_data_types()
+
+u = grib2.return_data('U component of wind', 'VNY')
+v = grib2.return_data('V component of wind', 'VNY')
+
+wind_speed = []
+for i, val in enumerate(v):
+    wind_speed.append(np.float64(mpcalc.wind_speed(u[i], val)))
+wind_speed = units.Quantity(wind_speed, units('m/s')).to(units.knots)
+
 # wind_speed = df['speed'].values * units.knots
 # todo
 # wind_dir = df['direction'].values * units.degrees
