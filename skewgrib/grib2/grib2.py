@@ -5,6 +5,7 @@ import numpy as np
 from metpy.units import units
 import pathlib
 
+# todo: rewrite as a class
 # https://nomads.ncep.noaa.gov/pub/data/nccf/com/rap/prod/rap.20201213/rap.t00z.awp130bgrbf00.grib2
 file = str(pathlib.Path(__file__).parent) + '/../../files/rap.t00z.awp130bgrbf00.grib2'
 grb_index = pygrib.index(file, 'name', 'typeOfLevel')

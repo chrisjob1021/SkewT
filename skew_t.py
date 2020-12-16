@@ -22,40 +22,40 @@ df = pd.read_fwf(get_test_data('jan20_sounding.txt', as_file_obj=False),
 df = df.dropna(subset=('temperature', 'dewpoint', 'direction', 'speed'
                        ), how='all').reset_index(drop=True)
 
-# p = df['pressure'].values * units.hPa
+p_t = df['pressure'].values * units.hPa
 # T = df['temperature'].values * units.degC
 # todo: Td = df['dewpoint'].values * units.degC
-# todo: wind_speed = df['speed'].values * units.knots
-# todo: wind_dir = df['direction'].values * units.degrees
-# todo: u, v = mpcalc.wind_components(wind_speed, wind_dir)
+# todo
+wind_speed = df['speed'].values * units.knots
+# todo
+wind_dir = df['direction'].values * units.degrees
+# todo
+u, v = mpcalc.wind_components(wind_speed, wind_dir)
 
 p = grib2.return_data('Pressure', 'VNY').to(units.hPa)
 T = grib2.return_data('Temperature', 'VNY').to(units.degC)
 
 specific_humidity = grib2.return_data('Specific humidity', 'VNY')
 dewpoints = []
-for i, v in enumerate(specific_humidity):
-    dewpoints.append(np.float64(mpcalc.dewpoint_from_specific_humidity(v, T[i], p[i])))
+for i, val in enumerate(specific_humidity):
+    dewpoints.append(np.float64(mpcalc.dewpoint_from_specific_humidity(val, T[i], p[i])))
 Td = units.Quantity(dewpoints, units.degC)
 
-grbs = grib2.helper_return_data_types()
-
-u = grib2.return_data('U component of wind', 'VNY')
-v = grib2.return_data('V component of wind', 'VNY')
-
-wind_speed = []
-for i, val in enumerate(v):
-    wind_speed.append(np.float64(mpcalc.wind_speed(u[i], val)))
-wind_speed = units.Quantity(wind_speed, units('m/s')).to(units.knots)
+# grbs = grib2.helper_return_data_types()
+#
+# u = grib2.return_data('U component of wind', 'VNY')
+# v = grib2.return_data('V component of wind', 'VNY')
+#
+# wind_speed = []
+# for i, val in enumerate(v):
+#     wind_speed.append(np.float64(mpcalc.wind_speed(u[i], val)))
+# wind_speed = units.Quantity(wind_speed, units('m/s')).to(units.knots)
 
 # wind_speed = df['speed'].values * units.knots
 # todo
 # wind_dir = df['direction'].values * units.degrees
 # todo: figure out what this does
 # u, v = mpcalc.wind_components(wind_speed, wind_dir)
-
-print("break")
-exit
 
 # Example of defining your own vertical barb spacing
 skew = SkewT()
@@ -69,7 +69,9 @@ skew.plot(p, Td, 'g')
 my_interval = np.arange(100, 1000, 50) * units('mbar')
 
 # Get indexes of values closest to defined interval
-ix = mpcalc.resample_nn_1d(p, my_interval)
+# ix = mpcalc.resample_nn_1d(p, my_interval)
+
+ix = list(range(50))
 
 # Plot only values nearest to defined interval values
 skew.plot_barbs(p[ix], u[ix], v[ix])
