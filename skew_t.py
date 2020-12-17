@@ -5,7 +5,17 @@ import metpy.calc as mpcalc
 from metpy.plots import SkewT
 from metpy.units import units
 
-from skewgrib.grib2 import grib2
+from grib2 import grib2
+
+def helper_calc(func, unit, *args):
+    results = []
+    for i, v in enumerate(args[0]):
+        send = [ v ]
+        for j in range(1,len(args)):
+            send.append(args[j][i])
+
+        results.append(np.float64(func(*send)))
+    return units.Quantity(results, unit)
 
 plt.rcParams['figure.figsize'] = (9, 9)
 
@@ -19,25 +29,10 @@ u = grb.return_data('U component of wind', location).to(units('m/s'))
 v = grb.return_data('V component of wind', location).to(units('m/s'))
 p = grb.return_data('Pressure', location).to(units.hPa)
 T = grb.return_data('Temperature', location).to(units.degC)
+Td = helper_calc(mpcalc.dewpoint_from_specific_humidity, units.degC, grb.return_data('Specific humidity', location), T, p)
+wind_speed = helper_calc(mpcalc.wind_speed, units('m/s'), u, v).to(units.knots)
+wind_dir = helper_calc(mpcalc.wind_direction, units('dimensionless'), u, v).to(units.degrees)
 
-specific_humidity = grb.return_data('Specific humidity', location)
-dewpoints = []
-# todo: make helper function
-for i, val in enumerate(specific_humidity):
-    dewpoints.append(np.float64(mpcalc.dewpoint_from_specific_humidity(val, T[i], p[i])))
-Td = units.Quantity(dewpoints, units.degC)
-
-wind_speed = []
-for i, val in enumerate(v):
-    wind_speed.append(np.float64(mpcalc.wind_speed(u[i], val)))
-wind_speed = units.Quantity(wind_speed, units('m/s')).to(units.knots)
-
-wind_dir = []
-for i, val in enumerate(v):
-    wind_dir.append(np.float64(mpcalc.wind_direction(u[i], val)))
-wind_dir = units.Quantity(wind_dir, units('dimensionless')).to(units.degrees)
-
-# Example of defining your own vertical barb spacing
 skew = SkewT()
 
 # Plot the data using normal plotting functions, in this case using
