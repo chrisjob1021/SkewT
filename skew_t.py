@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import metpy.calc as mpcalc
-from metpy.plots import Hodograph, SkewT
+from metpy.plots import SkewT
 from metpy.units import units
 
 def helper_calc(func, unit, *args):
@@ -18,7 +18,7 @@ def helper_calc(func, unit, *args):
 
 col_names = ['pressure', 'height', 'temperature', 'dewpoint', 'direction', 'speed']
 
-testData = False
+testData = True
 
 if testData:
     import pandas as pd
@@ -53,11 +53,13 @@ else:
     wind_dir = helper_calc(mpcalc.wind_direction, units('dimensionless'), u, v).to(units.degrees)
 
 # Create a new figure. The dimensions here give a good aspect ratio
-fig = plt.figure(figsize=(9, 9))
+fig = plt.figure(figsize=(12, 9))
 
 # Grid for plots
-gs = gridspec.GridSpec(3, 3)
-skew = SkewT(fig, rotation=45, subplot=gs[:, :2])
+#gs = gridspec.GridSpec(3, 3)
+#skew = SkewT(fig, rotation=45, subplot=gs[:, :2])
+gs = gridspec.GridSpec(4, 4)
+skew = SkewT(fig, rotation=45, subplot=gs[:, 1:])
 
 # Plot the data using normal plotting functions, in this case using
 # log scaling in Y, as dictated by the typical meteorological plot
@@ -70,13 +72,12 @@ skew.plot_dry_adiabats()
 skew.plot_moist_adiabats()
 skew.plot_mixing_lines()
 
-skew.ax.set_ylim(1000, 100)
+skew.ax.set_ylim(1000, 200)
 skew.ax.set_xlim(-30, 40)
 
-ax = fig.add_subplot(gs[0, -1])
-h = Hodograph(ax, component_range=60.)
-h.add_grid(increment=20)
-h.plot(u, v)
+ax = fig.add_subplot(gs[:, 0])
+pos = np.arange(len(p))
+ax.barh(pos, np.random.uniform(0, 5, len(p)))
 
 # Show the plot
 plt.show()
