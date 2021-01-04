@@ -8,14 +8,12 @@ from metpy.units import units
 
 import json
 
+# todo: comment this well
 def helper_calc(func, unit, *args):
     results = []
-    for i, v in enumerate(args[0]):
-        send = [ v ]
-        for j in range(1,len(args)):
-            send.append(args[j][i])
-
-        results.append(np.float64(func(*send)))
+    vals = list(zip(*args))
+    for val in vals:
+        results.append(np.float64(func(*val)))
     return units.Quantity(results, unit)
 
 col_names = ['pressure', 'height', 'temperature', 'dewpoint', 'direction', 'speed']
