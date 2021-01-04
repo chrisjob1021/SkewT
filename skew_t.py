@@ -6,6 +6,8 @@ import metpy.calc as mpcalc
 from metpy.plots import SkewT
 from metpy.units import units
 
+import json
+
 def helper_calc(func, unit, *args):
     results = []
     for i, v in enumerate(args[0]):
@@ -75,9 +77,18 @@ skew.plot_mixing_lines()
 skew.ax.set_ylim(1000, 200)
 skew.ax.set_xlim(-30, 40)
 
+with open("files/fip.json") as f:
+    icing = json.loads(f.read())
+
+levels, icing_probabilities = zip(*sorted(icing['data']['probability'].items(), key=lambda x: int(x[0])))
+_, icing_severities = zip(*sorted(icing['data']['probability'].items(), key=lambda x: int(x[0])))
+_, icing_sld = zip(*sorted(icing['data']['supercooledLargeDrop'].items(), key=lambda x: int(x[0])))
+
 ax = fig.add_subplot(gs[:, 0])
-pos = np.arange(len(p))
-ax.barh(pos, np.random.uniform(0, 5, len(p)))
+bar = ax.barh(levels, icing_probabilities, align='center')
+ax.set_xlabel('Icing Probability')
+ax.set_xticks([0, 25, 50, 75, 100])
+ax.set_ylabel('Pressure Alt')
 
 # Show the plot
 plt.show()
