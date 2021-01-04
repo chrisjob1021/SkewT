@@ -1,6 +1,7 @@
 import pygrib
 from metpy.units import units
 
+# todo: write tests
 class GribObject:
     def __init__(self, file):
         self.file = file
